@@ -50,7 +50,7 @@ build-linux:
     - python3 -m venv .venv
     - source .venv/bin/activate
     - python3 -m pip install pygit2 boto3 requests
-    - python3 -u build.py --path-to-build build-linux --build-number $CI_PIPELINE_IID --upload --spaces-key "$env:SPACES_KEY" --spaces-secret "$env:SPACES_SECRET"
+    - python3 -u build.py --path-to-build build-linux --build-number $CI_PIPELINE_IID --upload --spaces-key $SPACES_KEY --spaces-secret $SPACES_SECRET
   artifacts:
     paths:
       - build-linux/archive
