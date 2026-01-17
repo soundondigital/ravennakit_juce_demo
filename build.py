@@ -386,7 +386,14 @@ def build(args):
         path_to_build_x64 = build_windows(args, 'x64', build_config)
         archive = pack_and_sign_windows(args, path_to_build_x64, build_config)
     elif platform.system() == 'Linux':
-        path_to_build_arm64 = build_linux(args, 'arm64', build_config)
+        if platform.machine() == 'aarch64':
+            arch = 'arm64'
+        elif platform.machine() == 'x86_64':
+            arch = 'x64'
+        else:
+            raise Exception(f'Unknown platform: {platform.machine()}')
+
+        path_to_build_arm64 = build_linux(args, arch, build_config)
         archive = pack_linux(args, path_to_build_arm64, build_config)
 
     if archive and args.upload:
