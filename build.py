@@ -178,6 +178,42 @@ def pack_and_sign_windows(args, path_to_build_x64: Path, build_config: Config):
     return zip_path
 
 
+def pack_linux(args, path_to_build: Path, build_config: Config):
+    path_to_build_archive = Path(args.path_to_build).joinpath('archive')
+
+    def copy_into_archive(file: Path, sub_folder: Path = Path()):
+        if file.is_dir():
+            shutil.copytree(file, path_to_build_archive / sub_folder / file.name, symlinks=True, dirs_exist_ok=True)
+        else:
+            os.makedirs(path_to_build_archive / sub_folder, exist_ok=True)
+            shutil.copy(file, path_to_build_archive / sub_folder, follow_symlinks=True)
+
+    # RAVENNAKIT Demo application
+    path_to_desktop_receiver_app = path_to_build / app_artefacts_dir / str(build_config.value) / app_name
+
+    copy_into_archive(path_to_build / app_artefacts_dir)
+
+    # Create distribution zip
+    dist_path = path_to_build_archive / f'ravennakit-demo-{git_version}-linux-portable'
+    dist_path.unlink(missing_ok=True)
+    dist_path.mkdir()
+    shutil.copy(path_to_desktop_receiver_app, dist_path)
+    dist_zip_path = Path(str(dist_path.with_suffix('.zip')))
+    dist_zip_path.unlink(missing_ok=True)
+
+    shutil.make_archive(str(dist_path), 'zip', dist_path)
+    shutil.rmtree(dist_path)
+
+    # Create ZIP from archive
+    archive_path = args.path_to_build + f'/ravennakit-demo-{git_version}-linux-archive'
+    zip_path = Path(archive_path + '.zip')
+    zip_path.unlink(missing_ok=True)
+
+    shutil.make_archive(archive_path, 'zip', path_to_build_archive)
+
+    return zip_path
+
+
 def build_macos_for_arch(args, path_to_build: Path, build_config: Config, arch: str):
     path_to_build = path_to_build / arch
     path_to_build.mkdir(parents=True, exist_ok=True)
@@ -256,6 +292,32 @@ def build_windows(args, arch, build_config: Config):
     return path_to_build
 
 
+def build_linux(args, arch, build_config: Config):
+    path_to_build = Path(args.path_to_build) / ('linux-' + arch)
+
+    if args.skip_build:
+        return path_to_build
+
+    path_to_build.mkdir(parents=True, exist_ok=True)
+
+    cmake = CMake()
+    cmake.path_to_build(path_to_build)
+    cmake.path_to_source(script_dir)
+    cmake.build_config(build_config)
+    cmake.parallel(multiprocessing.cpu_count())
+
+    cmake.option('CMAKE_TOOLCHAIN_FILE', 'ravennakit/submodules/vcpkg/scripts/buildsystems/vcpkg.cmake')
+    cmake.option('VCPKG_OVERLAY_TRIPLETS', 'ravennakit/triplets')
+    cmake.option('VCPKG_TARGET_TRIPLET', arch + '-linux')
+    cmake.option('BUILD_NUMBER', args.build_number)
+    cmake.option('RAV_ENABLE_SPDLOG', 'ON')
+
+    cmake.configure()
+    cmake.build()
+
+    return path_to_build
+
+
 def build_dist(args):
     path_to_dist = Path(args.path_to_build) / 'dist'
     path_to_dist.mkdir(parents=True, exist_ok=True)
@@ -323,6 +385,9 @@ def build(args):
     elif platform.system() == 'Windows':
         path_to_build_x64 = build_windows(args, 'x64', build_config)
         archive = pack_and_sign_windows(args, path_to_build_x64, build_config)
+    elif platform.system() == 'Linux':
+        path_to_build_arm64 = build_linux(args, 'arm64', build_config)
+        archive = pack_linux(args, path_to_build_arm64, build_config)
 
     if archive and args.upload:
         upload_to_spaces(args, archive)
