@@ -46,7 +46,7 @@ build-linux:
   image: gcc:latest
   script:
     - apt-get update -y
-    - apt-get -y install python3-venv build-essential cmake ninja-build pkg-config python3-pip zip unzip g++ libasound2-dev libjack-jackd2-dev ladspa-sdk libcurl4-openssl-dev  libfreetype-dev libfontconfig1-dev libx11-dev libxcomposite-dev libxcursor-dev libxext-dev libxinerama-dev libxrandr-dev libxrender-dev
+    - apt-get -y install python3-venv build-essential cmake ninja-build pkg-config python3-pip zip unzip g++ gobjc++ libasound2-dev libjack-jackd2-dev ladspa-sdk libcurl4-openssl-dev  libfreetype-dev libfontconfig1-dev libx11-dev libxcomposite-dev libxcursor-dev libxext-dev libxinerama-dev libxrandr-dev libxrender-dev
     - python3 -m venv .venv
     - source .venv/bin/activate
     - python3 -m pip install pygit2 boto3 requests
