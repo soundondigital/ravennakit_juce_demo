@@ -239,10 +239,14 @@ void SettingsMainComponent::updateNetworkInterfaces()
 
     for (auto& iface : systemInterfaces)
     {
+#if !RAV_LINUX
+        // Linux doesn't really have a notion of ethernet types
         if (iface.get_type() != rav::NetworkInterface::Type::wired_ethernet)
             continue;
+        // Linux doesn't give names to network interfaces
         if (iface.get_display_name().empty())
             continue;
+#endif
         ids.add (iface.get_identifier());
         auto extended = iface.get_extended_display_name();
         primaryNetworkInterfaceComboBox_.addItem (extended, ids.size());
