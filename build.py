@@ -123,8 +123,8 @@ def signtool_get_sign_command_safenet(cert_thumbprint: str, cert_file: str, cont
     """
     return [str(signtool_get_path()), 'sign',
             '/f', cert_file,
-            '/csp', 'eToken Base Cryptographic Provider',
-            '/k', '[{{' + password + '}}]=' + container_name,
+            '/csp', '"eToken Base Cryptographic Provider"',
+            '/k', '"[{{' + password + '}}]=' + container_name + '"',
             '/tr', 'http://timestamp.globalsign.com/tsa/r6advanced1',
             '/td', 'SHA256',
             '/fd', 'SHA256',
