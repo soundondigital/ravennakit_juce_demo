@@ -14,7 +14,8 @@ from ravennakit.submodules.build_tools.macos.dmg import DMGBuilder
 from ravennakit.submodules.build_tools.macos.productbuilder import ProductBuilder
 from ravennakit.submodules.build_tools.macos.universal import *
 from ravennakit.submodules.build_tools.windows.innosetup import InnoSetup
-from ravennakit.submodules.build_tools.windows.signtool import signtool_get_sign_command, signtool_verify, signtool_sign
+from ravennakit.submodules.build_tools.windows.signtool import signtool_get_sign_command, signtool_verify, \
+    signtool_sign, signtool_get_path
 
 app_target_name = 'ravennakit_juce_demo'
 app_artefacts_dir = f'{app_target_name}_artefacts'
@@ -111,8 +112,32 @@ def pack_and_sign_macos(args, path_to_build: Path, build_config: Config):
     return zip_path
 
 
+def signtool_get_sign_command_safenet(cert_thumbprint: str, cert_file: str, container_name: str, password: str):
+    """
+    Returns a path to signtool without a file specified. Caller is responsible for adding a file as last parameter before invoking the command.
+    :param cert_thumbprint: The thumbprint of the certificate to use
+    :param container_name: The name of the safenet container
+    :param cert_file: The certificate file
+    :param password: The token password
+    :return: The constructed path
+    """
+    return [str(signtool_get_path()), 'sign',
+            '/f', cert_file,
+            '/csp', 'eToken Base Cryptographic Provider',
+            '/k', '[{{' + password + '}}]=' + container_name,
+            '/tr', 'http://timestamp.globalsign.com/tsa/r6advanced1',
+            '/td', 'SHA256',
+            '/fd', 'SHA256',
+            '/sha1', cert_thumbprint,
+            '/Debug']
+
 def get_signtool_command(args):
-    return ' '.join(signtool_get_sign_command(args.windows_code_sign_identity))
+    return ' '.join(signtool_get_sign_command_safenet(
+        args.windows_code_sign_identity,
+        args.windows_code_sign_cert,
+        args.windows_code_sign_container_name,
+        args.windows_code_sign_password
+    ))
 
 
 def pack_and_sign_windows(args, path_to_build_x64: Path, build_config: Config):
@@ -471,8 +496,17 @@ def main():
                             action="store_true")
 
         parser.add_argument("--windows-code-sign-identity",
-                            help="Specify the code signing identity (Windows only)",
+                            help="Specify the code signing identity",
                             default="431e889eeb203c2db5dd01da91d56186b20d1880")  # GlobalSign cert
+
+        parser.add_argument("--windows-code-sign-cert",
+                            help="Specify the code signing certificate file path")
+
+        parser.add_argument("--windows-code-sign-container-name",
+                            help="Specify the code signing certificate container name")
+
+        parser.add_argument("--windows-code-sign-password",
+                            help="Specify the code signing certificate token password")
 
         parser.add_argument("--windows-version",
                             help="Specify the minimum supported version of Windows",

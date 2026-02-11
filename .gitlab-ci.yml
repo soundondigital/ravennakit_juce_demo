@@ -33,7 +33,7 @@ build-windows:
   stage: build
   script:
     - python -m pip install pygit2 boto3
-    - python -u build.py --path-to-build build-windows --sign --build-number "$env:CI_PIPELINE_IID" --upload --spaces-key "$env:SPACES_KEY" --spaces-secret "$env:SPACES_SECRET"
+    - python -u build.py --path-to-build build-windows --sign --windows-code-sign-identity "$env:WIN_CODE_SIGN_IDENTITY" --windows-code-sign-cert "$env:WIN_CODE_SIGN_CERT" --windows-code-sign-container-name "$env:WIN_CODE_SIGN_CONTAINER_NAME" --windows-code-sign-password "$env:WIN_CODE_SIGN_PASSWORD" --build-number "$env:CI_PIPELINE_IID" --upload --spaces-key "$env:SPACES_KEY" --spaces-secret "$env:SPACES_SECRET"
   artifacts:
     paths:
       - build-windows/archive
