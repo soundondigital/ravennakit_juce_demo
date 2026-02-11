@@ -46,7 +46,7 @@ endif ()
 #########
 
 if (WIN32)
-    find_package(asiosdk REQUIRED REQUIRED)
+    find_package(ASIOSDK REQUIRED REQUIRED)
 endif ()
 
 ##############
