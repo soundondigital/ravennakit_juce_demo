@@ -112,32 +112,23 @@ def pack_and_sign_macos(args, path_to_build: Path, build_config: Config):
     return zip_path
 
 
-def signtool_get_sign_command_safenet(cert_thumbprint: str, cert_file: str, container_name: str, password: str):
-    """
-    Returns a path to signtool without a file specified. Caller is responsible for adding a file as last parameter before invoking the command.
-    :param cert_thumbprint: The thumbprint of the certificate to use
-    :param container_name: The name of the safenet container
-    :param cert_file: The certificate file
-    :param password: The token password
-    :return: The constructed path
-    """
-    return [str(signtool_get_path()), 'sign',
-            '/f', cert_file,
-            '/csp', '"eToken Base Cryptographic Provider"',
-            '/k', '"[{{' + password + '}}]=' + container_name + '"',
-            '/tr', 'http://timestamp.globalsign.com/tsa/r6advanced1',
-            '/td', 'SHA256',
-            '/fd', 'SHA256',
-            '/sha1', cert_thumbprint,
-            '/Debug']
+def get_signtool_command(args, q='"'):
+    password = args.windows_code_sign_password
+    container = args.windows_code_sign_container_name
+    cert_file = args.windows_code_sign_cert
+    thumbprint = args.windows_code_sign_identity
+    signtool = signtool_get_path()
 
-def get_signtool_command(args):
-    return ' '.join(signtool_get_sign_command_safenet(
-        args.windows_code_sign_identity,
-        args.windows_code_sign_cert,
-        args.windows_code_sign_container_name,
-        args.windows_code_sign_password
-    ))
+    return (
+        f'{q}{signtool}{q} sign'
+        f' /f {q}{cert_file}{q}'
+        f' /csp {q}eToken Base Cryptographic Provider{q}'
+        f' /k {q}[{{{{{password}}}}}]={container}{q}'
+        f' /tr http://timestamp.globalsign.com/tsa/r6advanced1'
+        f' /td SHA256 /fd SHA256'
+        f' /sha1 {thumbprint}'
+        f' /Debug'
+    )
 
 
 def pack_and_sign_windows(args, path_to_build_x64: Path, build_config: Config):
@@ -160,7 +151,7 @@ def pack_and_sign_windows(args, path_to_build_x64: Path, build_config: Config):
     innosetup.set_allow_change_destination(False)
 
     if args.sign:
-        innosetup.set_signtool_command(get_signtool_command(args))
+        innosetup.set_signtool_command(get_signtool_command(args, q='$q'))
 
     # Desktop sender app
     desktop_send = InnoSetup.File(path_to_desktop_receiver_app)
@@ -178,7 +169,7 @@ def pack_and_sign_windows(args, path_to_build_x64: Path, build_config: Config):
 
     # Sign the app
     if args.sign:
-        signtool_sign(args.windows_code_sign_identity, path_to_desktop_receiver_app)
+        subprocess.run(f'{get_signtool_command(args)} "{path_to_desktop_receiver_app}"', check=True)
 
     copy_into_archive(path_to_build_x64 / app_artefacts_dir)
 
@@ -281,10 +272,10 @@ def build_macos(args, build_config: Config):
     arm64_artefacts = arm64 / app_artefacts_dir / build_config.value
 
     lipo_app_bundle(x86_64_artefacts, arm64_artefacts, path_to_build / app_artefacts_dir / build_config.value,
-                    app_name,'.app')
+                    app_name, '.app')
 
     lipo_app_bundle(x86_64_artefacts, arm64_artefacts, path_to_build / app_artefacts_dir / build_config.value,
-                    app_name,'.app.dSYM')
+                    app_name, '.app.dSYM')
 
     return path_to_build
 
