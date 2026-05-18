@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.21.6] - May 18, 2026
+
+### Fixed
+
+- The application now requests permissions for audio input so that audio can be sent.
+
 ## [v0.21.5] - February 12, 2026
 
 ### Fixed
