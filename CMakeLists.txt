@@ -111,6 +111,10 @@ juce_add_gui_app(ravennakit_juce_demo
         PRODUCT_NAME ${PROJECT_PRODUCT_NAME}
         COMPANY_NAME ${PROJECT_COMPANY_NAME}
         BUNDLE_ID ${PROJECT_BUNDLE_ID}
+        HARDENED_RUNTIME_ENABLED TRUE
+        HARDENED_RUNTIME_OPTIONS com.apple.security.device.audio-input
+        MICROPHONE_PERMISSION_ENABLED TRUE
+        MICROPHONE_PERMISSION_TEXT "${PROJECT_PRODUCT_NAME} needs access to your audio input devices in order to send audio"
 )
 
 file(GLOB_RECURSE SOURCE_FILES source/*.hpp source/*.cpp)
