@@ -42,7 +42,7 @@ AlignConsecutiveDeclarations: None
 AlwaysBreakTemplateDeclarations: Yes
 PenaltyBreakAssignment: 1000
 PenaltyBreakComment: 10
-IndentPPDirectives: AfterHash
+IndentPPDirectives: BeforeHash
 ---
 Language: Proto
 UseTab: Never
