@@ -12,7 +12,9 @@ definitions:
           - git submodule set-url -- ravennakit git@bitbucket.org:soundondigital/ravennakit.git
           - git submodule update --recursive --init
           - brew install pkg-config
-          - python3 -m pip install pygit2 boto3 requests
+          - python3 -m venv .venv
+          - source .venv/bin/activate
+          - pip install pygit2 boto3 requests
           - python3 -u build.py --path-to-build build-macos --notarize --macos-notarization-password $MACOS_NOTARIZATION_PASSWORD --build-number $BITBUCKET_BUILD_NUMBER --upload --spaces-key $SPACES_KEY --spaces-secret $SPACES_SECRET
         artifacts:
           - build-macos/archive/*.dmg
@@ -37,7 +39,9 @@ definitions:
         script:
           - git submodule set-url -- ravennakit git@bitbucket.org:soundondigital/ravennakit.git
           - git submodule update --recursive --init
-          - python3 -m pip install pygit2 boto3 requests
+          - python3 -m venv .venv
+          - source .venv/bin/activate
+          - pip install pygit2 boto3 requests
           - python3 -u build.py --dist --path-to-build build-dist --build-number $BITBUCKET_BUILD_NUMBER --upload --spaces-key $SPACES_KEY --spaces-secret $SPACES_SECRET
         artifacts:
           - build-dist/*.zip
