@@ -54,12 +54,14 @@ def upload_to_spaces(args, file: Path):
                             aws_access_key_id=key,
                             aws_secret_access_key=secret)
 
-    if branch := os.getenv('CI_COMMIT_BRANCH'):
-        folder = 'branches/' + branch
-    elif tag := os.getenv('CI_COMMIT_TAG'):
+    if tag := os.getenv('CI_COMMIT_TAG'):  # GitLab specific
         folder = 'archive/' + tag
+    elif branch := os.getenv('CI_COMMIT_BRANCH'):  # GitLab specific
+        folder = 'branches/' + branch
+    elif mr := os.getenv('CI_MERGE_REQUEST_SOURCE_BRANCH_NAME'):  # GitLab specific
+        folder = 'branches/' + mr
     else:
-        print('WARNING: Not building on GitLab (no CI_COMMIT_BRANCH or CI_COMMIT_TAG available)')
+        print('WARNING: Not building on GitLab (no CI_COMMIT_BRANCH or CI_COMMIT_TAG or CI_MERGE_REQUEST_SOURCE_BRANCH_NAME available)')
         folder = 'local/' + git_branch
 
     bucket = 'ravennakit-juce-demo'
