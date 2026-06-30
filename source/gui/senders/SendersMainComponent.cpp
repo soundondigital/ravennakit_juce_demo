@@ -28,6 +28,7 @@ SendersMainComponent::SendersMainComponent (ApplicationContext& context) :
     miniDeviceSelector_ (context.getAudioDeviceManager(), MiniAudioDeviceSelectorComponent::Direction::Input)
 {
     viewport_.setViewedComponent (&sendersContainer_, false);
+    viewport_.setScrollBarsShown (true, false);
     addAndMakeVisible (viewport_);
 
     addAndMakeVisible (miniDeviceSelector_);

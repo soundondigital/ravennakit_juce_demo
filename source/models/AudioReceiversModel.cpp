@@ -49,8 +49,7 @@ void AudioReceiversModel::removeReceiver (const rav::Id receiverId) const
 
 void AudioReceiversModel::updateReceiverConfiguration (const rav::Id senderId, rav::RavennaReceiver::Configuration config) const
 {
-    auto result = node_.update_receiver_configuration (senderId, std::move (config)).get();
-    if (!result)
+    if (auto result = node_.update_receiver_configuration (senderId, std::move (config)).get(); !result)
     {
         RAV_LOG_ERROR ("Failed to update receiver configuration: {}", result.error());
     }
@@ -309,7 +308,7 @@ bool AudioReceiversModel::Receiver::processBlock (
     if (guard->rtpTimestamp == std::nullopt)
     {
         guard->rtpTimestamp = ptpTimestamp.from_rtp_timestamp32 (rtpTimestamp, guard->outputFormat.sample_rate)
-                                 .to_rtp_timestamp32 (guard->inputFormat.sample_rate);
+                                  .to_rtp_timestamp32 (guard->inputFormat.sample_rate);
     }
 
     // Check how much the timestamp at the input frequency differs from the one of the output frequency.
