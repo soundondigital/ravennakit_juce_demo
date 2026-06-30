@@ -93,6 +93,12 @@ private:
         rav::Id receiverId_;
         rav::RavennaReceiver::Configuration configuration_;
 
+        // Label description
+        juce::Label labelLabel_;
+        juce::TextEditor labelEditor_;
+        juce::Label descriptionLabel_;
+        juce::TextEditor descriptionEditor_;
+
         // Session
         juce::Label sessionNameLabel_ { "session_name" };
         juce::Label audioFormatLabel_ { "audio_format" };

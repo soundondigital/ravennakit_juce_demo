@@ -187,9 +187,6 @@ ReceiversContainer::Row::Row (AudioReceiversModel& audioReceivers, const rav::Id
 {
     constexpr float fontSize = 14.0f;
 
-    sessionNameLabel_.setFont (juce::FontOptions (fontSize, juce::Font::bold));
-    addAndMakeVisible (sessionNameLabel_);
-
     addAndMakeVisible (audioFormatLabel_);
 
     settingsLabel_.setFont (juce::FontOptions (fontSize, juce::Font::bold));
@@ -269,6 +266,50 @@ ReceiversContainer::Row::Row (AudioReceiversModel& audioReceivers, const rav::Id
     warningLabel_.setColour (juce::Label::ColourIds::textColourId, Constants::Colours::warning);
     addAndMakeVisible (warningLabel_);
 
+    // Label and description
+
+    labelLabel_.setText ("Label", juce::dontSendNotification);
+    addAndMakeVisible (labelLabel_);
+
+    labelEditor_.onReturnKey = [this] {
+        auto config = configuration_;
+        config.label = labelEditor_.getText().toStdString();
+        audioReceivers_.updateReceiverConfiguration (receiverId_, std::move (config));
+        unfocusAllComponents();
+    };
+    labelEditor_.onFocusLost = [this] {
+        labelEditor_.onReturnKey();
+    };
+    labelEditor_.onEscapeKey = [this] {
+        labelEditor_.setText (juce::String (configuration_.label));
+        unfocusAllComponents();
+    };
+    labelEditor_.setIndents (8, 8);
+    addAndMakeVisible (labelEditor_);
+
+    descriptionLabel_.setText ("Description", juce::dontSendNotification);
+    addAndMakeVisible (descriptionLabel_);
+
+    descriptionEditor_.onReturnKey = [this] {
+        auto config = configuration_;
+        config.description = descriptionEditor_.getText().toStdString();
+        audioReceivers_.updateReceiverConfiguration (receiverId_, std::move (config));
+        unfocusAllComponents();
+    };
+    descriptionEditor_.onFocusLost = [this] {
+        descriptionEditor_.onReturnKey();
+    };
+    descriptionEditor_.onEscapeKey = [this] {
+        descriptionEditor_.setText (juce::String (configuration_.description));
+        unfocusAllComponents();
+    };
+    descriptionEditor_.setIndents (8, 8);
+    addAndMakeVisible (descriptionEditor_);
+
+    sessionNameLabel_.setFont (juce::FontOptions (fontSize, juce::Font::bold));
+    sessionNameLabel_.setText ("Source: (none)", juce::dontSendNotification);
+    addAndMakeVisible (sessionNameLabel_);
+
     update (0, {});
     update (1, {});
 }
@@ -284,7 +325,9 @@ void ReceiversContainer::Row::update (const AudioReceiversModel::ReceiverState& 
 
     configuration_ = state.configuration;
 
-    sessionNameLabel_.setText (state.configuration.session_name, juce::dontSendNotification);
+    sessionNameLabel_.setText (
+        "Source: " + (state.configuration.session_name.empty() ? "(none)" : state.configuration.session_name),
+        juce::dontSendNotification);
 
     warningLabel_.setColour (juce::Label::ColourIds::textColourId, Constants::Colours::warning);
     if (state.configuration.sdp.session_name.empty())
@@ -318,6 +361,12 @@ void ReceiversContainer::Row::update (const AudioReceiversModel::ReceiverState& 
 
     if (!delayEditor_.hasKeyboardFocus (true))
         delayEditor_.setText (juce::String (state.configuration.delay_frames));
+
+    if (!labelEditor_.hasKeyboardFocus (true))
+        labelEditor_.setText (juce::String (state.configuration.label));
+
+    if (!descriptionEditor_.hasKeyboardFocus (true))
+        descriptionEditor_.setText (juce::String (state.configuration.description));
 
     onOffButton_.setToggleState (state.configuration.enabled, juce::dontSendNotification);
     onOffButton_.setButtonText (state.configuration.enabled ? "On" : "Off");
@@ -366,8 +415,9 @@ void ReceiversContainer::Row::resized()
 
     auto column1 = leftSection.removeFromLeft (kColumnWidth);
     auto column2 = leftSection.removeFromLeft (kColumnWidth);
-    auto column3 = rightSection.removeFromLeft (kColumnWidth);
-    auto column4 = rightSection.removeFromLeft (kColumnWidth);
+    auto column3 = rightSection.removeFromLeft (150);
+    auto column4 = rightSection.removeFromLeft (150);
+    auto column5 = rightSection.removeFromLeft (kColumnWidth).withTrimmedRight (20);
 
     sessionNameLabel_.setBounds (column1.removeFromTop (rowHeight));
     audioFormatLabel_.setBounds (column1.removeFromTop (rowHeight));
@@ -385,4 +435,12 @@ void ReceiversContainer::Row::resized()
 
     primaryPacketStats_.setBounds (column3.removeFromTop (rowHeight * 6));
     secondaryPacketStats_.setBounds (column4.removeFromTop (rowHeight * 6));
+
+    labelLabel_.setBounds (column5.removeFromTop (rowHeight));
+    labelEditor_.setBounds (column5.removeFromTop (31));
+
+    column5.removeFromTop (8);
+
+    descriptionLabel_.setBounds (column5.removeFromTop (rowHeight));
+    descriptionEditor_.setBounds (column5.removeFromTop (31));
 }
